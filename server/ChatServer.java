@@ -12,6 +12,7 @@ class ClientHandler implements Runnable {
     }
 
     public void run() {
+        String key = "uyfyiyuvchcgkckgckxclyclccgkcg lu  ccgccctcucotcfufofuuvuvouvuvvo";
         try {
             BufferedReader reader = new BufferedReader( new InputStreamReader( clientSocket.getInputStream() ) );
             PrintWriter writer = new PrintWriter( clientSocket.getOutputStream(), true );
@@ -19,15 +20,17 @@ class ClientHandler implements Runnable {
                 clientOutputs.add(writer);
             }
 
-            String clientID = "client " + reader.readLine();
+            String clientUsername = reader.readLine();
             String message;
-            System.out.println("Le " + clientID + " est connecté !");
+            System.out.println(clientUsername + " est connecté !");
 
             while ((message = reader.readLine()) != null) {
-                System.out.println(clientID + " : " + message);
+                String encrypted = CryptoUtils.encrypt(message, key);
+                System.out.println(clientUsername + " : " + encrypted);
                 synchronized (clientOutputs) {
                     for (PrintWriter writer2 : clientOutputs) {
-                        writer2.println(clientID + " : " + message);
+                        String decryted = CryptoUtils.decrypt(encrypted, key);
+                        writer2.println(clientUsername + " : " + decryted);
                     }
                 }
             }
@@ -48,5 +51,50 @@ public class ChatServer {
                 new Thread( new ClientHandler(clienSocket) ).start();
             }
         }
+    }
+}
+
+class CryptoUtils {
+
+    public static String encrypt(String message, String key) {
+        String encrypHexa = "";
+        int keyItr = 0;
+
+        for (int i = 0; i < message.length(); i++) {
+            int temp = message.charAt(i) ^ key.charAt(keyItr);
+
+            encrypHexa += String.format("%02x", (byte)temp);
+            keyItr++;
+
+            if (keyItr >= key.length()) {
+                keyItr = 0;
+            }
+        }
+
+        return encrypHexa;
+    }
+
+    public static String decrypt(String message, String key) {
+        String hexToDeci = "";
+        for (int i = 0; i < message.length() -1; i+=2) {
+            String output = message.substring(i, (i+2));
+            int decimal = Integer.parseInt(output, 16);
+            hexToDeci += (char)decimal;
+        }
+
+        String decryptText = "";
+        int keyItr = 0;
+        for (int i = 0; i < hexToDeci.length(); i++) {
+            int temp = hexToDeci.charAt(i) ^ key.charAt(keyItr);
+
+            decryptText += (char)temp;
+            keyItr++;
+
+            if (keyItr >= key.length()) {
+                keyItr = 0;
+            }
+        }
+
+        return decryptText;
     }
 }

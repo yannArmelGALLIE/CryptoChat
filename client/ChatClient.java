@@ -1,31 +1,19 @@
 import java.io.*;
-import java.net.*;
 
 public class ChatClient {
     public static void main(String[] args) throws IOException {
-        try (Socket clientSocket = new Socket("localhost", 1234)) {
-            PrintWriter writer = new PrintWriter(clientSocket.getOutputStream(), true);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
+        try (BufferedReader console = new BufferedReader(new InputStreamReader(System.in))) {
+            
 
-            System.out.println("Quel est votre ID (ex: 1) : ");
-            String clientID = console.readLine();
-            writer.println(clientID);
-
-            new Thread(() -> {
-                try {
-                    String messageServer;
-                    while ((messageServer = reader.readLine()) != null) {
-                        System.out.println(messageServer);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }).start();;
+            System.out.println("Choisissez un nom d'utilisateur : ");
+            String username = console.readLine();
+            
+            ChatConnection connection = new ChatConnection();
+            connection.connect("localhost", 1234, username);
 
             String message;
             while ((message = console.readLine()) != null) {
-                writer.println(message);
+                connection.sendMessage(message);
             }
 
         } catch (IOException e) {
