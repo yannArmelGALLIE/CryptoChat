@@ -73,7 +73,7 @@ java --module-path /c/openjdk/lib --add-modules javafx.controls,javafx.fxml Chat
 
 ## 👨‍💻 Auteurs
 
-<p>RTELCloud est développé par :</p><br>
+<p>CryptoChat est développé par :</p><br>
 <p>Koffi Yann-Armel GALLIE – [github](https://github.com/yannArmelGALLIE/)</p><br>
 <p>Kouakou Paul Oswald Djônon KOUASSI – [github](https://github.com/djonon0210/)</p><br>
 <p>Diallo Gilles N’GASSA – [github](https://github.com/Gilles19F/)</p>
