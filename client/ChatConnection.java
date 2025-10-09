@@ -1,12 +1,13 @@
-
 import java.io.*;
 import java.net.*;
+import java.util.function.*;
 
 public class ChatConnection {
 
     private Socket socket;
     private PrintWriter writer;
     private BufferedReader reader;
+    private Consumer<String> onMessagConsumer;
 
     public void connect(String host, int port, String username) throws IOException {
         socket = new Socket(host, port);
@@ -20,11 +21,18 @@ public class ChatConnection {
                 String message;
                 while ((message = reader.readLine()) != null) {
                     System.out.println(message);
+                    if (onMessagConsumer != null) {
+                        onMessagConsumer.accept(message);
+                    }
                 }
             } catch (IOException e) {
                e.printStackTrace();
             }
         }).start();
+    }
+
+    public void setOnMessageReceived(Consumer<String> handler) {
+        this.onMessagConsumer = handler;
     }
 
     public void sendMessage(String message) {

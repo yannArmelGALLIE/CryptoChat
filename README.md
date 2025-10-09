@@ -33,13 +33,15 @@ CryptoChat démontre comment allier **réseau, sécurité et UX** pour créer un
 CryptoChat/
 ├─ server/
 │ └─ ChatServer.java # Serveur TCP
-├─ client/
-│ ├─ ChatClient.java # Client en console
-│ └─ ChatClientGUI.java # Client avec interface graphique
-├─ security/
-│ └─ Crypto.java # Chiffrement/déchiffrement
-└─ utils/
-  └─ Logger.java # Gestion des logs
+└─ client/
+    ├─ChatConnection.java
+    ├─Session.java
+    ├─Login.java
+    ├─ChatScene.java
+    ├─ ChatClient.java # Client en console
+    └─ ChatClientGUI.java # Client avec interface graphique
+
+
 ```
 
 ## 📦 Installation et exécution
@@ -49,27 +51,32 @@ CryptoChat/
 git clone https://github.com/votre-compte/CryptoChat.git
 cd CryptoChat
 ```
-### 2. Compiler le serveur
+### 2. Compiler et lancer le serveur
 ```
-javac server/ChatServer.java security/Crypto.java utils/Logger.java
+cd server
+javac ChatServer.java 
+java ChatServer
 ```
-### 3. Lancer le serveur
+### 3. Compiler et lancer le client (console)
 ```
-java server.ChatServer
+cd client
+javac ChatConnection.java ChatClient.java
+java ChatClient
 ```
-### 4. Compiler le client (GUI)
+### 4. Compiler et lancer le client (GUI)
 ```
-javac client/ChatClientGUI.java security/Crypto.java
+cd client
+javac ChatConnection.java Session.java
+javac --module-path /c/openjdk/lib --add-modules javafx.controls,javafx.fxml ChatClientGUI.java ChatScene.java Login.java ChatScene.java
+java --module-path /c/openjdk/lib --add-modules javafx.controls,javafx.fxml ChatClientGUI
 ```
 
-### 5. Lancer le client
-```
-java client.ChatClientGUI`
-```
+## 👨‍💻 Auteurs
 
-## 👨‍💻 Auteur
+<p>RTELCloud est développé par :</p><br>
+<p>Koffi Yann-Armel GALLIE – [github](https://github.com/yannArmelGALLIE/)</p><br>
+<p>Kouakou Paul Oswald Djônon KOUASSI – [github](https://github.com/djonon0210/)</p><br>
+<p>Diallo Gilles N’GASSA – [github](https://github.com/Gilles19F/)</p>
 
-RTELCloud est développé par : 
-Koffi Yann-Armel GALLIE – [github](https://github.com/yannArmelGALLIE/)
 
 

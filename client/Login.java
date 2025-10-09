@@ -6,6 +6,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
 public class Login {
+    private ChatConnection connection;
 
     @FXML
     private TextField port;
@@ -28,17 +29,26 @@ public class Login {
         wrongLogin1.setText("");
         wrongLogin2.setText("");
 
-        ChatClientGUI m = new ChatClientGUI();
-        if (username.getText().toString().equals("Yann") && port.getText().toString().equals("1234")) {
-            m.changeScene("afterLogin.fxml");
-        }
-
-        else if (username.getText().isEmpty() && port.getText().isEmpty()) {
+        if (username.getText().isEmpty() && port.getText().isEmpty()) {
             wrongLogin2.setText("Entrez un username et un port");
         }
 
-        else {
-            wrongLogin1.setText("Nom ou port incorect");
-        }
+       try {
+        int portNumber = Integer.parseInt(port.getText());
+        connection = new ChatConnection();
+        connection.connect("localhost", portNumber, username.getText());
+
+        Session.connection = connection;
+        Session.username = username.getText();
+        
+        ChatClientGUI.changeScene("ChatScene.fxml");
+       }
+       catch (NumberFormatException e) {
+        wrongLogin1.setText("Le port doit être un nombre");
+       }
+       catch (IOException e) {
+        wrongLogin1.setText("Impossible de se connecter au serveur");
+        e.printStackTrace();
+       }
     }
 }
