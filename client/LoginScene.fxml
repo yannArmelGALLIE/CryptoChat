@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: #121212;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Login">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="649.0" style="-fx-background-color: #121212;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Login">
    <left>
       <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
          <children>
@@ -32,7 +32,7 @@
       </AnchorPane>
    </left>
    <center>
-      <AnchorPane prefHeight="400.0" prefWidth="325.0" BorderPane.alignment="CENTER">
+      <AnchorPane prefHeight="400.0" prefWidth="384.0" BorderPane.alignment="CENTER">
          <children>
             <Label layoutX="14.0" layoutY="132.0" prefHeight="30.0" prefWidth="169.0" text="Nom d'utilisateur" textFill="DARKGRAY">
                <font>
@@ -59,6 +59,11 @@
             <Label layoutX="45.0" layoutY="55.0" text="Connectez vous à un port" textFill="DARKGRAY">
                <font>
                   <Font name="System Bold" size="23.0" />
+               </font>
+            </Label>
+            <Label fx:id="wrongLogin3" layoutX="45.0" layoutY="332.0" textFill="#cc0d0d">
+               <font>
+                  <Font name="System Bold" size="17.0" />
                </font>
             </Label>
          </children>

@@ -16,7 +16,7 @@ public class ChatClientGUI extends Application {
         Scene scene = new Scene(root);
 
         primaryStage.setScene(scene);
-        primaryStage.setTitle("Chat Client");
+        primaryStage.setTitle("CryptoChat");
         primaryStage.show();
     }
   

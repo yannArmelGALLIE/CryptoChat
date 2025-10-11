@@ -19,12 +19,15 @@ class ClientHandler implements Runnable {
             BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             writer = new PrintWriter(clientSocket.getOutputStream(), true);
 
+            clientUsername = reader.readLine();
+            System.out.println(clientUsername + " est connecté !");
+
             synchronized (clients) {
                 clients.add(this);
             }
 
-            clientUsername = reader.readLine();
-            System.out.println(clientUsername + " est connecté !");
+            broadcast(clientUsername + " a rejoint le chat !", null);
+            broadcastUserList();
 
             String message;
             while ((message = reader.readLine()) != null) {
@@ -32,10 +35,9 @@ class ClientHandler implements Runnable {
                 String encrypted = CryptoUtils.encrypt(message, key);
                 System.out.println(clientUsername + " : " + encrypted);
 
-
                 synchronized (clients) {
                     for (ClientHandler client : clients) {
-                        if (client != this) { 
+                        if (client != this) {
                             String decrypted = CryptoUtils.decrypt(encrypted, key);
                             client.writer.println(clientUsername + " : " + decrypted);
                         }
@@ -47,6 +49,9 @@ class ClientHandler implements Runnable {
         } finally {
             synchronized (clients) {
                 clients.remove(this);
+
+                broadcast("USER_LEFT:" + clientUsername, this);
+            broadcastUserList();
             }
             try {
                 clientSocket.close();
@@ -54,6 +59,32 @@ class ClientHandler implements Runnable {
                 e.printStackTrace();
             }
             System.out.println(clientUsername + " s'est déconnecté.");
+        }
+    }
+
+    private void broadcast(String message, ClientHandler excludeUser) {
+        synchronized (clients) {
+            for (ClientHandler client : clients) {
+                if (client != excludeUser) {
+                    client.writer.println(message);
+                }
+            }
+        }
+    }
+
+    // 🔸 Diffuse la liste complète des utilisateurs connectés
+    private void broadcastUserList() {
+        synchronized (clients) {
+            StringBuilder userList = new StringBuilder();
+            for (ClientHandler client : clients) {
+                userList.append(client.clientUsername).append(",");
+            }
+            if (!clients.isEmpty()) {
+                userList.setLength(userList.length() - 1); // Supprime la dernière virgule
+            }
+            for (ClientHandler client : clients) {
+                client.writer.println("USER_LIST:" + userList);
+            }
         }
     }
 }

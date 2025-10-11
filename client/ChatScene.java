@@ -2,14 +2,23 @@ import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.*;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -20,58 +29,173 @@ public class ChatScene implements Initializable {
     private Button button_send;
 
     @FXML
+    private Button button_logout;
+
+    @FXML
     private TextField tf_message;
 
     @FXML
     private VBox vbox_message;
 
     @FXML
+    private VBox vbox_user;
+
+    @FXML
     private ScrollPane sp_main;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        
+
         vbox_message.heightProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 sp_main.setVvalue((Double) newValue);
             }
         });
-        
-        Session.connection.setOnMessageReceived(this::displayIncomingMessage);
-        
+
+        Session.connection.setOnMessageReceived(this::handleIncomingMessage);
+
         button_send.setOnAction(e -> sendMessage());
         tf_message.setOnAction(e -> sendMessage());
+        button_logout.setOnAction(e -> logout());
+    }
+
+    private void addUserToList(String username) {
+        HBox hbox = new HBox();
+        hbox.setAlignment(Pos.CENTER_LEFT);
+        hbox.setPrefHeight(40);
+        hbox.setPrefWidth(135);
+        VBox.setMargin(hbox, new Insets(5, 0, 0, 0)); 
+
+        ImageView imageView = new ImageView(new Image(getClass().getResourceAsStream("/assets/user.png")));
+        imageView.setFitHeight(35);
+        imageView.setFitWidth(36);
+        imageView.setPreserveRatio(true);
+
+        Label label = new Label(username);
+        label.setTextFill(javafx.scene.paint.Color.WHITE);
+        label.setFont(Font.font("System", FontWeight.BOLD, 19));
+        HBox.setMargin(label, new Insets(0, 0, 0, 12)); // espace entre l’image et le texte
+
+        hbox.getChildren().addAll(imageView, label);
+
+        Platform.runLater(() -> vbox_user.getChildren().add(hbox));
     }
 
     private void sendMessage() {
         String msg = tf_message.getText().trim();
         if (!msg.isEmpty()) {
             Session.connection.sendMessage(msg);
-            displayOwnMessage(Session.username + ": " + msg);
+            displayOwnMessage(msg, "Vous");
             tf_message.clear();
         }
     }
 
-    private void displayOwnMessage(String message) {
-        HBox hbox = new HBox();
-        hbox.setAlignment(Pos.CENTER_RIGHT);
+    private void displayOwnMessage(String message, String author) {
+        VBox vbox = new VBox();
+        vbox.setAlignment(Pos.TOP_RIGHT);
+        VBox.setMargin(vbox, new Insets(10, 0, 0, 0));
+
+        Label label = new Label(author);
+        label.setFont(Font.font("System", FontWeight.BOLD, 17));
+        label.setPadding(new Insets(0, 20, 0, 0));
+
         Text text = new Text(message);
         TextFlow textFlow = new TextFlow(text);
-        textFlow.setStyle("-fx-background-color: lightgreen; -fx-padding: 8px; -fx-background-radius: 10; -fx-margin: 10px");
-        hbox.getChildren().add(textFlow);
+        textFlow.setMaxWidth(190);
+        textFlow.setPrefWidth(Region.USE_COMPUTED_SIZE);
 
-        Platform.runLater(() -> vbox_message.getChildren().add(hbox));
+        textFlow.setStyle("-fx-background-color: lightgreen; -fx-background-radius: 50; -fx-padding: 8px;");
+
+        vbox.getChildren().addAll(label, textFlow);
+
+        Platform.runLater(() -> vbox_message.getChildren().add(vbox));
     }
 
-    private void displayIncomingMessage(String message) {
-        HBox hbox = new HBox();
-        hbox.setAlignment(Pos.CENTER_LEFT);
+    private void displayIncomingMessage(String message, String author) {
+        VBox vbox = new VBox();
+        vbox.setAlignment(Pos.TOP_LEFT);
+        VBox.setMargin(vbox, new Insets(10, 0, 0, 0));
+
+        Label label = new Label(author);
+        label.setFont(Font.font("System", FontWeight.BOLD, 17));
+        label.setPadding(new Insets(0, 0, 0, 20));
+
         Text text = new Text(message);
         TextFlow textFlow = new TextFlow(text);
-        textFlow.setStyle("-fx-background-color: lightblue; -fx-padding: 8px; -fx-background-radius: 10; -fx-margin: 10px;");
-        hbox.getChildren().add(textFlow);
+        textFlow.setMaxWidth(190); 
+        textFlow.setPrefWidth(Region.USE_COMPUTED_SIZE);
 
-        Platform.runLater(() -> vbox_message.getChildren().add(hbox));
+        textFlow.setStyle("-fx-background-color: lightblue; -fx-background-radius: 50; -fx-padding: 8px;");
+
+        vbox.getChildren().addAll(label, textFlow);
+
+        Platform.runLater(() -> vbox_message.getChildren().add(vbox));
+
     }
+
+    private void handleIncomingMessage(String message) {
+        if (message.startsWith("USER_JOINED:")) {
+            String username = message.substring("USER_JOINED:".length());
+            addUserToList(username);
+        } else if (message.startsWith("USER_LEFT:")) {
+            String username = message.substring("USER_LEFT:".length());
+            removeUserFromList(username);
+        } else if (message.startsWith("USER_LIST:")) {
+            String[] users = message.substring("USER_LIST:".length()).split(",");
+            updateUserList(users);
+        } else {
+            String[] parts = message.split(":", 2);
+            String author = parts.length > 1 ? parts[0].trim() : "Serveur";
+            String msg = parts.length > 1 ? parts[1].trim() : message;
+            displayIncomingMessage(msg, author);
+        }
+    }
+
+    private void removeUserFromList(String username) {
+        Platform.runLater(() -> {
+            vbox_user.getChildren().removeIf(node -> {
+                if (node instanceof HBox hbox) {
+                    for (var child : hbox.getChildren()) {
+                        if (child instanceof Label label && label.getText().equals(username)) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+
+            });
+        });
+    }
+
+    private void updateUserList(String[] users) {
+        Platform.runLater(() -> {
+            vbox_user.getChildren().clear();
+            for (String username : users) {
+                addUserToList(username);
+            }
+        });
+    }
+
+    private void logout() {
+    try {
+        Session.connection.close();
+        Platform.runLater(() -> {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/LoginScene.fxml"));
+                Scene scene = new Scene(loader.load());
+                Stage stage = (Stage) button_logout.getScene().getWindow();
+                stage.setScene(scene);
+                stage.show();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+
+
 }
