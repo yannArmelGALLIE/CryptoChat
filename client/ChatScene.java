@@ -38,9 +38,6 @@ public class ChatScene implements Initializable {
     private VBox vbox_message;
 
     @FXML
-    private VBox vbox_user;
-
-    @FXML
     private ScrollPane sp_main;
 
     @Override
@@ -58,28 +55,6 @@ public class ChatScene implements Initializable {
         button_send.setOnAction(e -> sendMessage());
         tf_message.setOnAction(e -> sendMessage());
         button_logout.setOnAction(e -> logout());
-    }
-
-    private void addUserToList(String username) {
-        HBox hbox = new HBox();
-        hbox.setAlignment(Pos.CENTER_LEFT);
-        hbox.setPrefHeight(40);
-        hbox.setPrefWidth(135);
-        VBox.setMargin(hbox, new Insets(5, 0, 0, 0)); 
-
-        ImageView imageView = new ImageView(new Image(getClass().getResourceAsStream("/assets/user.png")));
-        imageView.setFitHeight(35);
-        imageView.setFitWidth(36);
-        imageView.setPreserveRatio(true);
-
-        Label label = new Label(username);
-        label.setTextFill(javafx.scene.paint.Color.WHITE);
-        label.setFont(Font.font("System", FontWeight.BOLD, 19));
-        HBox.setMargin(label, new Insets(0, 0, 0, 12)); // espace entre l’image et le texte
-
-        hbox.getChildren().addAll(imageView, label);
-
-        Platform.runLater(() -> vbox_user.getChildren().add(hbox));
     }
 
     private void sendMessage() {
@@ -123,7 +98,7 @@ public class ChatScene implements Initializable {
 
         Text text = new Text(message);
         TextFlow textFlow = new TextFlow(text);
-        textFlow.setMaxWidth(190); 
+        textFlow.setMaxWidth(190);
         textFlow.setPrefWidth(Region.USE_COMPUTED_SIZE);
 
         textFlow.setStyle("-fx-background-color: lightblue; -fx-background-radius: 50; -fx-padding: 8px;");
@@ -135,67 +110,30 @@ public class ChatScene implements Initializable {
     }
 
     private void handleIncomingMessage(String message) {
-        if (message.startsWith("USER_JOINED:")) {
-            String username = message.substring("USER_JOINED:".length());
-            addUserToList(username);
-        } else if (message.startsWith("USER_LEFT:")) {
-            String username = message.substring("USER_LEFT:".length());
-            removeUserFromList(username);
-        } else if (message.startsWith("USER_LIST:")) {
-            String[] users = message.substring("USER_LIST:".length()).split(",");
-            updateUserList(users);
-        } else {
-            String[] parts = message.split(":", 2);
-            String author = parts.length > 1 ? parts[0].trim() : "Serveur";
-            String msg = parts.length > 1 ? parts[1].trim() : message;
-            displayIncomingMessage(msg, author);
-        }
-    }
-
-    private void removeUserFromList(String username) {
-        Platform.runLater(() -> {
-            vbox_user.getChildren().removeIf(node -> {
-                if (node instanceof HBox hbox) {
-                    for (var child : hbox.getChildren()) {
-                        if (child instanceof Label label && label.getText().equals(username)) {
-                            return true;
-                        }
-                    }
-                }
-                return false;
-
-            });
-        });
-    }
-
-    private void updateUserList(String[] users) {
-        Platform.runLater(() -> {
-            vbox_user.getChildren().clear();
-            for (String username : users) {
-                addUserToList(username);
-            }
-        });
+        String[] parts = message.split(":", 2);
+        String author = parts.length > 1 ? parts[0].trim() : "Serveur";
+        String msg = parts.length > 1 ? parts[1].trim() : message;
+        displayIncomingMessage(msg, author);
     }
 
     private void logout() {
-    try {
-        Session.connection.close();
-        Platform.runLater(() -> {
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/LoginScene.fxml"));
-                Scene scene = new Scene(loader.load());
-                Stage stage = (Stage) button_logout.getScene().getWindow();
-                stage.setScene(scene);
-                stage.show();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        });
+        try {
+            Session.connection.close();
+            Platform.runLater(() -> {
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/LoginScene.fxml"));
+                    Scene scene = new Scene(loader.load());
+                    Stage stage = (Stage) button_logout.getScene().getWindow();
+                    stage.setScene(scene);
+                    stage.show();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            });
 
-    } catch (Exception e) {
-        e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-}
-
 
 }

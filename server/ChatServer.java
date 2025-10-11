@@ -27,7 +27,6 @@ class ClientHandler implements Runnable {
             }
 
             broadcast(clientUsername + " a rejoint le chat !", null);
-            broadcastUserList();
 
             String message;
             while ((message = reader.readLine()) != null) {
@@ -50,8 +49,7 @@ class ClientHandler implements Runnable {
             synchronized (clients) {
                 clients.remove(this);
 
-                broadcast("USER_LEFT:" + clientUsername, this);
-            broadcastUserList();
+                broadcast(clientUsername + " s'est déconnecté.", this);
             }
             try {
                 clientSocket.close();
@@ -71,22 +69,8 @@ class ClientHandler implements Runnable {
             }
         }
     }
+   
 
-    // 🔸 Diffuse la liste complète des utilisateurs connectés
-    private void broadcastUserList() {
-        synchronized (clients) {
-            StringBuilder userList = new StringBuilder();
-            for (ClientHandler client : clients) {
-                userList.append(client.clientUsername).append(",");
-            }
-            if (!clients.isEmpty()) {
-                userList.setLength(userList.length() - 1); // Supprime la dernière virgule
-            }
-            for (ClientHandler client : clients) {
-                client.writer.println("USER_LIST:" + userList);
-            }
-        }
-    }
 }
 
 public class ChatServer {
@@ -138,4 +122,5 @@ class CryptoUtils {
         }
         return decryptText;
     }
+
 }
